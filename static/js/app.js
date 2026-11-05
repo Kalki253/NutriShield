@@ -13,12 +13,17 @@
     }
     const port = window.location.port;
     const protocol = window.location.protocol;
+    const hostname = window.location.hostname || '127.0.0.1';
+    const isLoopbackHost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
     // If served from FastAPI on port 8000, use same-origin relative URLs
     if ((protocol === 'http:' || protocol === 'https:') && port === '8000') {
       return '';
     }
+    // Public deployments serve the frontend and API from the same origin
+    if ((protocol === 'http:' || protocol === 'https:') && !isLoopbackHost) {
+      return '';
+    }
     // If served from VS Code Live Server (e.g. 5500, 5504), Vite (5173), Next (3000), or file://
-    const hostname = window.location.hostname || '127.0.0.1';
     const targetHost = (hostname === 'localhost' || hostname === '127.0.0.1') ? hostname : '127.0.0.1';
     return `http://${targetHost}:8000`;
   }

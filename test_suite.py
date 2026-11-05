@@ -296,6 +296,8 @@ def run_tests():
         assert 'id="predictionNutritionGuidance"' in homepage.text
         assert 'id="batchNutritionGuidance"' in homepage.text
         nutrient_script = (app.STATIC_DIR / "js" / "app.js").read_text(encoding="utf-8")
+        assert "const isLoopbackHost = ['localhost', '127.0.0.1', '::1'].includes(hostname);" in nutrient_script
+        assert "if ((protocol === 'http:' || protocol === 'https:') && !isLoopbackHost)" in nutrient_script
         assert "MODEL_PERFORMANCE_TIMEOUT_MS = 90000" in nutrient_script
         assert "requestJson('/api/model-performance', { timeoutMs: MODEL_PERFORMANCE_TIMEOUT_MS }, true)" in nutrient_script
         assert "Age must be a whole number from 1 to 21 years, inclusive." in nutrient_script
