@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriShield – AI-Powered Child Nutrition Screening and Monitoring System</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.6.1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout" id="appRoot">
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">
+          <!-- Medical Shield Heartbeat Icon -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 17v-5m0 0c-3.5 0-5.5-2-5.5-5.5C10 6.5 12 8.5 12 12Zm0 0c0-3.5 2-5.5 5.5-5.5C17.5 10 15.5 12 12 12Z"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1 data-i18n="appName">NutriShield</h1>
+          <span class="brand-badge" data-i18n="badgeVersion">Child Nutrition Screening</span>
+        </div>
+      </div>
+      <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close Sidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <p id="voiceStatus" class="form-hint" role="status" aria-live="polite"></p>
+    <p id="reportStatus" class="form-hint" role="status" aria-live="polite"></p>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav">
+      <span class="nav-section-title" data-i18n="navScreeningModules">Screening Modules</span>
+
+      <a href="#dashboard" class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+          <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+          <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+        </svg>
+        <span data-i18n="navDashboard">Dashboard</span>
+      </a>
+
+      <a href="#predict" class="nav-item" data-view="predict">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+        <span data-i18n="navNewAssessment">New Screening</span>
+      </a>
+
+      <a href="#batch" class="nav-item" data-view="batch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="4" width="18" height="5" rx="1"></rect>
+          <rect x="3" y="11" width="18" height="5" rx="1"></rect>
+          <rect x="3" y="18" width="18" height="2" rx="1"></rect>
+        </svg>
+        <span data-i18n="navBatchPrediction">Batch Prediction</span>
+      </a>
+
+      <a href="#performance" class="nav-item" data-view="performance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 3v18h18"></path>
+          <path d="m19 9-5 5-4-4-5 5"></path>
+        </svg>
+        <span data-i18n="navPerformance">Model Performance</span>
+      </a>
+
+      <a href="#monitoring" class="nav-item" data-view="monitoring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span data-i18n="navMonitoring">Screening History</span>
+      </a>
+
+      <a href="#education" class="nav-item" data-view="education">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        <span data-i18n="navNutritionEdu">Nutrition Guidance</span>
+      </a>
+
+    </nav>
+
+    <!-- Sidebar Footer with Live ML Backend Indicator -->
+    <div class="sidebar-footer">
+      <div class="system-status-box">
+        <div class="status-dot" id="sidebarStatusDot"></div>
+        <div class="status-text-wrap">
+          <span class="status-label" id="sidebarStatusLabel" role="status" aria-live="polite" data-i18n="connecting">Connecting...</span>
+        </div>
+        <button class="status-retry-btn" id="retryBackendBtn" type="button" data-i18n="retryConnection">Retry</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Navigation" aria-expanded="false" aria-controls="sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h2 class="page-title" id="pageTitle" data-i18n="navDashboard">Dashboard</h2>
+      </div>
+
+      <div class="header-right">
+        <div class="header-stat-pill">
+          <span data-i18n="sessionAssessments">Screenings Logged:</span>
+          <strong id="sessionCountPill">0</strong>
+        </div>
+
+        <button class="quick-action-btn" data-goto-view="predict">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span data-i18n="btnStartScreening">Start Screening</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ================================================================== -->
+      <!-- VIEW 1: DASHBOARD -->
+      <!-- ================================================================== -->
+      <section class="view-section active" id="dashboard-view">
+
+        <!-- Welcome Hero Banner -->
+        <div class="welcome-hero">
+          <div class="hero-text">
+            <h2 data-i18n="heroTitle">NutriShield – AI-Powered Child Nutrition Screening and Monitoring System</h2>
+            <p class="brand-tagline">Smarter Screening. Healthier Futures.</p>
+            <p data-i18n="heroDesc">Supporting child nutrition awareness through data-driven analysis.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn-primary" data-goto-view="predict">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              <span data-i18n="btnStartScreening">Start Screening</span>
+            </button>
+            <button class="btn-secondary" data-goto-view="education">
+              <span data-i18n="btnOpenNutritionGuide">Nutrition Guide</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dashboard summary -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon teal">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-title" data-i18n="statModelStatus">ML Model Status</span>
+              <span class="stat-value" id="dashModelStatus" data-i18n="connecting">Connecting...</span>
+              <span class="stat-detail" id="dashModelStatusDetail" data-i18n="backendCheckingDetail">Checking backend and saved model availability.</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-title" data-i18n="statSessionAssessments">Total Screenings</span>
+              <span class="stat-value" id="dashSessionTotal">0</span>
+              <span class="stat-detail" data-i18n="statSessionDetail">Saved in monitoring log</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid dashboard-grid-single">
+
+          <!-- Left Column: Recent Screenings Preview -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span data-i18n="recentAssessmentsTitle">Recent Nutrition Screenings</span>
+              </h3>
+              <button class="btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" data-goto-view="monitoring">
+                <span data-i18n="btnViewFullLog">View Monitoring Log</span>
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th data-i18n="thTime">Date & Time</th>
+                    <th>Demographics</th>
+                    <th>Height / Weight</th>
+                    <th data-i18n="thResult">ML Classification</th>
+                    <th data-i18n="thActions">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dashRecentHistoryTable">
+                  <tr>
+                    <td colspan="5" class="empty-history-placeholder" data-i18n="emptyRecentHistory">
+                      No screenings recorded yet. Start an assessment to begin tracking.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Model Evaluation Dashboard -->
+      <section class="view-section" id="performance-view">
+        <div class="education-hero">
+          <h2 data-i18n="performanceTitle">Model Performance and Evaluation</h2>
+          <p data-i18n="performanceSubtitle">Explore model evaluation metrics, classification results and graphical performance analysis.</p>
+        </div>
+
+        <div class="card metrics-notice" id="metricsNotice" role="status" aria-live="polite" aria-busy="true">
+          <strong data-i18n="metricsStatusTitle">Evaluation Status</strong>
+          <p id="metricsReason" data-i18n="metricsLoading">Loading model performance and dataset information...</p>
+          <button class="btn-secondary" id="downloadMetricsReportBtn" type="button">Download evaluation report (JSON)</button>
+          <button class="btn-secondary metrics-retry-btn" id="retryMetricsBtn" type="button" data-i18n="retryEvaluation">Retry evaluation</button>
+        </div>
+
+        <section class="card evaluation-details" aria-labelledby="evaluationDetailsTitle">
+          <h3 class="card-title" id="evaluationDetailsTitle">Evaluation methodology and limitations</h3>
+          <div class="evaluation-details-grid">
+            <div>
+              <h4>Methodology</h4>
+              <p id="evaluationMethodology" class="form-hint">Loading evaluation methodology...</p>
+            </div>
+            <div>
+              <h4>Limitations</h4>
+              <p id="evaluationLimitations" class="form-hint">Loading dataset and model limitations...</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="stats-grid performance-metrics-grid" aria-label="Reconstructed model evaluation metrics">
+          <div class="stat-card"><div class="stat-info"><span class="stat-title" data-i18n="metricAccuracy">Accuracy</span><span class="stat-value" id="metricAccuracy">Not available</span></div></div>
+          <div class="stat-card"><div class="stat-info"><span class="stat-title" data-i18n="metricPrecision">Macro Precision</span><span class="stat-value" id="metricPrecision">Not available</span></div></div>
+          <div class="stat-card"><div class="stat-info"><span class="stat-title" data-i18n="metricRecall">Macro Recall</span><span class="stat-value" id="metricRecall">Not available</span></div></div>
+          <div class="stat-card"><div class="stat-info"><span class="stat-title" data-i18n="metricF1">Macro F1-score</span><span class="stat-value" id="metricF1">Not available</span></div></div>
+          <div class="stat-card"><div class="stat-info"><span class="stat-title">Weighted F1-score</span><span class="stat-value" id="metricF1Weighted">Not available</span></div></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="chart-card">
+            <div class="chart-card-header"><h3 class="chart-card-title">Reconstructed candidate comparison</h3></div>
+            <p class="form-hint" id="modelComparisonSummary">Candidate metrics are not metrics for the saved deployment model.</p>
+            <div class="chart-container">
+              <svg class="chart-svg" id="modelComparisonChart" role="img" aria-labelledby="modelComparisonTitle modelComparisonDescription">
+                <title id="modelComparisonTitle">Reconstructed model candidate comparison</title>
+                <desc id="modelComparisonDescription">Macro F1 scores for candidates evaluated on the same held-out split.</desc>
+              </svg>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header"><h3 class="chart-card-title">Class-wise test metrics</h3></div>
+            <div class="table-responsive" id="classificationReportContainer"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 class="chart-card-title" data-i18n="targetCountsTitle">Dataset Target-Label Counts</h3>
+            </div>
+            <p class="form-hint" id="datasetCountsSummary" data-i18n="metricsLoading">Loading dataset summary...</p>
+            <div class="chart-container">
+              <svg class="chart-svg" id="targetCountsChart" role="img" aria-labelledby="targetCountsChartTitle targetCountsChartDescription">
+                <title id="targetCountsChartTitle">Dataset target-label counts</title>
+                <desc id="targetCountsChartDescription">Bar chart of source dataset class counts; this is not a performance chart.</desc>
+              </svg>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title" data-i18n="confusionMatrixTitle">Confusion Matrix</h3>
+            <p id="confusionMatrixStatus" class="form-hint" data-i18n="metricsUnavailable">Not available</p>
+            <div class="table-responsive" id="confusionMatrixContainer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- VIEW 2: NEW PREDICTION SCREENING -->
+      <!-- ================================================================== -->
+      <section class="view-section" id="predict-view">
+
+        <div class="prediction-container">
+
+          <!-- Left Column: Biometric Assessment Form -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                </svg>
+                <span data-i18n="biometricTitle">Child Biometric Measurements</span>
+              </h3>
+            </div>
+
+            <p class="screening-intro" data-i18n="screeningIntro">Enter the child's biometric measurements to generate an AI-based nutritional classification.</p>
+
+            <!-- Alert banner for client/server errors -->
+            <div class="alert alert-error" id="predictAlert" style="display: none;"></div>
+
+            <form id="predictionForm" autocomplete="off">
+
+              <!-- Sex Toggle Selection -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span data-i18n="lblSex">Child Biological Sex</span>
+                  <small data-i18n="lblSexSub">(Feature used by the trained model)</small>
+                </label>
+                <div class="sex-button-group">
+                  <button type="button" class="sex-btn active" id="sexMaleBtn" aria-pressed="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="10" cy="14" r="5"></circle>
+                      <line x1="19" y1="5" x2="13.6" y2="10.4"></line>
+                      <polyline points="15 5 19 5 19 9"></polyline>
+                    </svg>
+                    <span data-i18n="btnMale">Male</span>
+                  </button>
+                  <button type="button" class="sex-btn" id="sexFemaleBtn" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="9" r="5"></circle>
+                      <line x1="12" y1="14" x2="12" y2="21"></line>
+                      <line x1="9" y1="18" x2="15" y2="18"></line>
+                    </svg>
+                    <span data-i18n="btnFemale">Female</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Age Input -->
+              <div class="form-group">
+                <label class="form-label" for="inputAge">
+                  <span data-i18n="lblAge">Age</span>
+                  <small data-i18n="lblAgeSub">(Completed Years, 1–21)</small>
+                </label>
+                <div class="input-with-suffix">
+                  <input type="number" id="inputAge" class="form-control" min="1" max="21" step="1" placeholder="e.g., 3" required>
+                  <span class="input-suffix">years</span>
+                </div>
+                <span class="form-hint" data-i18n="ageHint">Enter an age from 1 to 21 years. The available dataset and saved model support vectors cover ages 1–5 only; predictions for ages 6–21 are unvalidated extrapolations.</span>
+              </div>
+
+              <!-- Height Input -->
+              <div class="form-group">
+                <label class="form-label" for="inputHeight">
+                  <span data-i18n="lblHeight">Height / Length</span>
+                  <small data-i18n="lblHeightSub">(Centimetres)</small>
+                </label>
+                <div class="input-with-suffix">
+                  <input type="number" id="inputHeight" class="form-control" min="20.1" max="250" step="0.1" placeholder="e.g., 85.0" required>
+                  <span class="input-suffix">cm</span>
+                </div>
+                <span class="form-hint" data-i18n="heightHint">Measure recumbent length for infants (&lt;2y) or standing height for toddlers.</span>
+              </div>
+
+              <!-- Weight Input -->
+              <div class="form-group">
+                <label class="form-label" for="inputWeight">
+                  <span data-i18n="lblWeight">Weight</span>
+                  <small data-i18n="lblWeightSub">(Kilograms)</small>
+                </label>
+                <div class="input-with-suffix">
+                  <input type="number" id="inputWeight" class="form-control" min="1.1" max="150" step="0.1" placeholder="e.g., 12.0" required>
+                  <span class="input-suffix">kg</span>
+                </div>
+                <span class="form-hint" data-i18n="weightHint">Record using calibrated pediatric weighing scale.</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="inputChildCode">Child record code (optional)</label>
+                <input type="text" id="inputChildCode" class="form-control" maxlength="64" pattern="[A-Za-z0-9_.-]+" autocomplete="off" aria-describedby="childCodeHint">
+                <span class="form-hint" id="childCodeHint">Use a pseudonymous code only. Do not enter a child's name or direct identifier.</span>
+              </div>
+
+              <!-- Live Calculated BMI Ribbon -->
+              <div class="live-metric-ribbon">
+                <span class="ribbon-label" data-i18n="lblLiveBmi">Calculated Body Mass Index (BMI):</span>
+                <span class="ribbon-value" id="liveBmiDisplay">-- kg/m²</span>
+              </div>
+
+              <!-- Submit Button -->
+              <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn-primary" id="predictSubmitBtn">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                  </svg>
+                  <span data-i18n="btnGeneratePrediction">Generate ML Screening & Explanation</span>
+                </button>
+              </div>
+
+            </form>
+            <p class="screening-guidance-note" data-i18n="screeningGuidanceNote">Results are based on the available dataset and should be interpreted with professional healthcare guidance.</p>
+          </div>
+
+          <!-- Right Column: Explainable Results Card -->
+          <div class="result-card-container">
+
+            <!-- Placeholder State -->
+            <div class="result-placeholder" id="resultPlaceholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              <h4 style="font-weight: 600; color: var(--color-navy);" data-i18n="awaitingInputsTitle">Awaiting Biometric Inputs</h4>
+              <p style="font-size: 0.82rem; max-width: 330px;" data-i18n="awaitingInputsDesc">
+                Enter the child's measurements and run the prediction to view the model-generated nutritional classification.
+              </p>
+            </div>
+
+            <!-- Active Result Card with Explainability -->
+            <div class="result-display-card" id="resultDisplayCard">
+              <div class="result-header">
+                <span class="result-status-label" data-i18n="lblModelOutput">Predicted nutritional classification</span>
+                <div>
+                  <span class="result-status-badge" id="resultBadge"></span>
+                </div>
+              </div>
+
+              <div class="result-body">
+                <!-- Condition Clinical Overview -->
+                <div class="result-explanation-box" id="resultExplanationBox">
+                  <!-- Dynamic content populated by JS -->
+                </div>
+                <p class="form-hint model-information" id="resultModelInformation">Model: saved SVM classifier (new_svm_with_grid_search.joblib).</p>
+
+                <!-- Explainability Breakdown Panel -->
+                <div class="explain-panel">
+                  <div class="explain-panel-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span data-i18n="explainabilityPanelTitle">Model sensitivity check</span>
+                  </div>
+                  <div class="explain-rationale-box">
+                    <p id="expRationaleText" style="margin-top: 0.25rem;" data-i18n="sensitivityLoading">Model sensitivity explanation will appear here.</p>
+                    <ul id="expFeatureList" class="sensitivity-list"></ul>
+                  </div>
+                </div>
+
+                <!-- Clinical Next Steps & Guidance Panel -->
+                <div class="next-steps-panel">
+                  <div class="next-steps-header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 14 14"></polyline>
+                    </svg>
+                    <span data-i18n="nextStepsTitle">Screening Guidance & Recommended Next Steps</span>
+                  </div>
+                  <div class="next-steps-content" id="nextStepsGuidanceBox">
+                    <!-- Populated dynamically based on triage level -->
+                  </div>
+                </div>
+
+                <!-- Input Summary Table -->
+                <table class="result-summary-table">
+                  <tbody>
+                    <tr>
+                      <td data-i18n="lblDemographicSex">Biological Sex:</td>
+                      <td id="resSummarySex">--</td>
+                    </tr>
+                    <tr>
+                      <td data-i18n="lblDemographicAge">Recorded Age:</td>
+                      <td id="resSummaryAge">--</td>
+                    </tr>
+                    <tr>
+                      <td data-i18n="lblDemographicHeight">Measured Height:</td>
+                      <td id="resSummaryHeight">--</td>
+                    </tr>
+                    <tr>
+                      <td data-i18n="lblDemographicWeight">Measured Weight:</td>
+                      <td id="resSummaryWeight">--</td>
+                    </tr>
+                    <tr>
+                      <td data-i18n="lblDemographicBmi">Calculated BMI:</td>
+                      <td id="resSummaryBmi">--</td>
+                    </tr>
+                    <tr>
+                      <td data-i18n="lblEvaluationTime">Evaluation Timestamp:</td>
+                      <td id="resSummaryTimestamp">--</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Safety Notice -->
+                <div class="result-disclaimer" data-i18n="safetyNotice">
+                  This result represents a machine learning prediction based on the available dataset. It is not a confirmed medical diagnosis.
+                </div>
+                <div class="age-range-warning" id="ageValidationNotice" role="note" hidden></div>
+
+                <section class="nutrient-education-panel" aria-labelledby="predictionNutrientTitle">
+                  <h3 id="predictionNutrientTitle">Nutrient Deficiency Information</h3>
+                  <p class="nutrient-education-notice">Specific nutrient deficiencies cannot be determined from the current screening model.</p>
+                  <h4>Explore Foods by Nutrient</h4>
+                  <div class="nutrient-food-buttons" data-food-explorer>
+                    <button type="button" class="nutrient-food-button" data-nutrient="iron" aria-controls="predictionFoodDetails" aria-expanded="false">Iron-Rich Foods</button>
+                    <button type="button" class="nutrient-food-button" data-nutrient="vitamin-a" aria-controls="predictionFoodDetails" aria-expanded="false">Vitamin A-Rich Foods</button>
+                    <button type="button" class="nutrient-food-button" data-nutrient="calcium" aria-controls="predictionFoodDetails" aria-expanded="false">Calcium-Rich Foods</button>
+                    <button type="button" class="nutrient-food-button" data-nutrient="protein" aria-controls="predictionFoodDetails" aria-expanded="false">Protein-Rich Foods</button>
+                    <button type="button" class="nutrient-food-button" data-nutrient="vitamin-c" aria-controls="predictionFoodDetails" aria-expanded="false">Vitamin C-Rich Foods</button>
+                    <button type="button" class="nutrient-food-button" data-nutrient="folate" aria-controls="predictionFoodDetails" aria-expanded="false">Folate-Rich Foods</button>
+                  </div>
+                  <div class="nutrient-food-detail" id="predictionFoodDetails" role="region" aria-live="polite" hidden></div>
+                </section>
+
+                <!-- Action Buttons -->
+                <div class="result-actions">
+                  <button type="button" class="btn-secondary" id="openNutritionGuidanceBtn">Nutrition Guidance</button>
+                  <button type="button" class="btn-primary" id="saveHistoryBtn">
+                    <span data-i18n="btnSaveToHistory">Save to history</span>
+                  </button>
+                  <button type="button" class="btn-secondary" id="downloadReportBtn">
+                    <span data-i18n="btnDownloadReport">Download PDF report</span>
+                  </button>
+                  <button type="button" class="btn-secondary" id="speakResultBtn">
+                    <span data-i18n="btnSpeakResult">Read aloud</span>
+                  </button>
+                  <button type="button" class="btn-primary" id="newPredictionBtn" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+                    <span data-i18n="btnNewAssessment">New Assessment</span>
+                  </button>
+                  <button type="button" class="btn-secondary" data-goto-view="monitoring" style="padding: 0.75rem 1rem; font-size: 0.9rem;">
+                    <span data-i18n="btnViewInMonitoring">View in Growth Charts</span>
+                  </button>
+                </div>
+                <p id="saveHistoryStatus" class="form-hint" role="status" aria-live="polite"></p>
+                <section id="predictionNutritionGuidance" class="prediction-nutrition-guidance" aria-labelledby="predictionGuidanceTitle" hidden>
+                  <h3 id="predictionGuidanceTitle">Nutrition Guidance</h3>
+                  <div class="nutrition-guidance-content"></div>
+                  <button type="button" class="btn-secondary" data-guidance-back>Back to Results</button>
+                </section>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Batch Dataset Prediction -->
+      <section class="view-section" id="batch-view">
+        <div class="batch-page-header">
+          <h2>Batch Prediction</h2>
+          <p>Upload multiple records to receive model-predicted nutritional classifications. Accepted ages are 1–21 years.</p>
+        </div>
+
+        <p class="privacy-notice" role="note">
+          Uploaded records are processed in memory and are not saved to the server. Batch results are machine learning predictions, not confirmed medical diagnoses.
+        </p>
+
+        <div class="card batch-upload-panel">
+          <h3 class="card-title">Upload a CSV or Excel file</h3>
+          <p class="batch-help-text">Use one record per row. Required columns are exactly <strong>Sex</strong>, <strong>Age</strong>, <strong>Height</strong>, and <strong>Weight</strong>. Sex may be Male/Female or the model encoding 1/0. Age must be a whole number from 1 to 21; Height is in centimetres and Weight is in kilograms. Additional fields, including an uploaded Status column, are preserved but never used as model inputs. Do not include names or direct identifiers.</p>
+          <p class="age-range-warning" role="note">The available dataset and saved model support vectors cover ages 1–5 only. Ages 6–21 are accepted, but their predictions are unvalidated model extrapolations.</p>
+          <p class="form-hint">Accepted formats: .csv and .xlsx. Maximum file size: 10 MB. Maximum rows: 10,000. Invalid rows are reported and excluded; missing measurements are never filled in.</p>
+          <div class="batch-upload-controls">
+            <label class="btn-secondary batch-file-label" for="batchFileInput">Choose dataset</label>
+            <input id="batchFileInput" class="batch-file-input" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" aria-describedby="batchFileHelp">
+            <span id="batchFileName" class="form-hint" aria-live="polite">No file selected</span>
+            <button type="button" class="btn-secondary" id="downloadBatchTemplateBtn">Download template</button>
+            <button type="button" class="btn-primary batch-submit-btn" id="batchUploadBtn" disabled>Upload and predict</button>
+          </div>
+          <span id="batchFileHelp" class="form-hint">Template columns: Sex, Age, Height, Weight</span>
+          <progress id="batchUploadProgress" class="batch-upload-progress" max="100" value="0" hidden></progress>
+          <p id="batchStatus" class="form-hint" role="status" aria-live="polite"></p>
+        </div>
+
+        <div id="batchResults" class="batch-results" hidden>
+          <div class="batch-results-heading">
+            <h3>Prediction Summary</h3>
+            <p id="batchDenominatorNote" class="form-hint"></p>
+          </div>
+          <section id="batchNutritionGuidance" class="batch-nutrition-guidance" aria-labelledby="batchGuidanceTitle" hidden>
+            <h3 id="batchGuidanceTitle">Nutrition Guidance</h3>
+            <div class="nutrition-guidance-content"></div>
+            <button type="button" class="btn-secondary" data-guidance-back>Back to Results</button>
+          </section>
+          <section class="nutrient-education-panel" aria-labelledby="batchNutrientTitle">
+            <h3 id="batchNutrientTitle">Nutrient Deficiency Information</h3>
+            <p class="nutrient-education-notice">Specific nutrient deficiencies cannot be determined from the current screening model. No nutrient deficiencies are assigned to individual batch rows.</p>
+            <h4>Explore Foods by Nutrient</h4>
+            <div class="nutrient-food-buttons" data-food-explorer>
+              <button type="button" class="nutrient-food-button" data-nutrient="iron" aria-controls="batchFoodDetails" aria-expanded="false">Iron-Rich Foods</button>
+              <button type="button" class="nutrient-food-button" data-nutrient="vitamin-a" aria-controls="batchFoodDetails" aria-expanded="false">Vitamin A-Rich Foods</button>
+              <button type="button" class="nutrient-food-button" data-nutrient="calcium" aria-controls="batchFoodDetails" aria-expanded="false">Calcium-Rich Foods</button>
+              <button type="button" class="nutrient-food-button" data-nutrient="protein" aria-controls="batchFoodDetails" aria-expanded="false">Protein-Rich Foods</button>
+              <button type="button" class="nutrient-food-button" data-nutrient="vitamin-c" aria-controls="batchFoodDetails" aria-expanded="false">Vitamin C-Rich Foods</button>
+              <button type="button" class="nutrient-food-button" data-nutrient="folate" aria-controls="batchFoodDetails" aria-expanded="false">Folate-Rich Foods</button>
+            </div>
+            <div class="nutrient-food-detail" id="batchFoodDetails" role="region" aria-live="polite" hidden></div>
+          </section>
+          <div class="batch-summary-grid">
+            <div class="stat-card"><div class="stat-info"><span class="stat-title">Uploaded records</span><span class="stat-value" id="batchTotalRecords">0</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-title">Valid predictions</span><span class="stat-value" id="batchValidRecords">0</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-title">Rejected records</span><span class="stat-value" id="batchRejectedRecords">0</span></div></div>
+            <div class="stat-card"><div class="stat-info"><span class="stat-title">Duplicate inputs</span><span class="stat-value" id="batchDuplicateRecords">0</span></div></div>
+          </div>
+
+          <div class="chart-card batch-distribution-panel">
+            <div class="chart-card-header"><h3 class="chart-card-title">Model-Predicted Categories</h3></div>
+            <p class="form-hint">Percentages use successfully predicted records as the denominator. These are model outputs, not diagnoses or population prevalence.</p>
+            <svg id="batchDistributionChart" class="batch-distribution-chart" role="img" aria-label="Distribution of model-predicted categories"></svg>
+            <div id="batchDistributionLegend" class="batch-distribution-legend"></div>
+          </div>
+
+          <div class="card batch-table-panel">
+            <div class="batch-table-heading">
+              <h3 class="card-title">Batch Results</h3>
+              <div class="batch-export-actions">
+                <button type="button" class="btn-secondary" id="batchDownloadCsvBtn">Download results CSV</button>
+                <button type="button" class="btn-secondary" id="batchDownloadValidationBtn">Download validation report</button>
+                <button type="button" class="btn-secondary" id="batchDownloadSummaryBtn">Download summary report</button>
+              </div>
+            </div>
+            <div class="batch-filters">
+              <label for="batchSearchInput">Search results</label>
+              <input id="batchSearchInput" class="form-control" type="search" placeholder="Search input values or prediction">
+              <label for="batchClassFilter">Predicted category</label>
+              <select id="batchClassFilter" class="form-control"><option value="">All categories</option></select>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="batchResultsTable">
+                <thead id="batchResultsHead"></thead>
+                <tbody id="batchResultsBody"></tbody>
+              </table>
+            </div>
+            <div class="batch-pagination">
+              <span id="batchPageSummary" class="form-hint"></span>
+              <div>
+                <button type="button" class="btn-secondary" id="batchPreviousPageBtn">Previous</button>
+                <button type="button" class="btn-secondary" id="batchNextPageBtn">Next</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card batch-validation-panel">
+            <h3 class="card-title">Rejected Rows</h3>
+            <p id="batchValidationSummary" class="form-hint"></p>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead><tr><th>Input row</th><th>Validation reasons</th></tr></thead>
+                <tbody id="batchRejectedRowsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- VIEW 3: NUTRITION MONITORING & INTERACTIVE GROWTH CHARTS -->
+      <!-- ================================================================== -->
+      <section class="view-section" id="monitoring-view">
+
+        <!-- Monitoring Section Header -->
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.45rem; font-weight: 700; color: var(--color-navy);" data-i18n="growthMonitoringTitle">
+            Nutrition Monitoring & Growth Trajectory
+          </h2>
+          <p style="font-size: 0.88rem; color: var(--color-slate-muted);" data-i18n="growthMonitoringSubtitle">
+            Track longitudinal biometric changes in Weight, BMI, and nutritional outcomes across screening sessions.
+          </p>
+        </div>
+
+        <!-- 3 Interactive SVG Charts Grid -->
+        <p class="privacy-notice" data-i18n="historyPrivacy">
+          Screening history is stored in this application's server-side SQLite database and is available to anyone with access to this application. Use only a pseudonymous child code; avoid names or direct identifiers.
+        </p>
+        <p id="historyStorageStatus" class="form-hint" role="status" aria-live="polite">Records are stored in this application's server-side SQLite history. Avoid direct identifiers.</p>
+        <div class="monitoring-charts-grid">
+
+          <!-- Chart 1: Weight Progression Over Time -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 class="chart-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <span data-i18n="weightChartTitle">Weight Progression Over Time (kg)</span>
+              </h3>
+            </div>
+            <div class="chart-container">
+              <svg class="chart-svg" id="weightChartSvg"></svg>
+            </div>
+          </div>
+
+          <!-- Chart 2: BMI Trend Over Time -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 class="chart-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                  <line x1="8" y1="6" x2="16" y2="6"></line>
+                </svg>
+                <span data-i18n="bmiChartTitle">BMI Trend Over Time (kg/m²)</span>
+              </h3>
+            </div>
+            <div class="chart-container">
+              <svg class="chart-svg" id="bmiChartSvg"></svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chart 3: Screening Outcome Distribution -->
+        <div class="chart-card" style="margin-bottom: 2rem;">
+          <div class="chart-card-header">
+            <h3 class="chart-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+              </svg>
+              <span data-i18n="summaryChartTitle">Screening Outcome Distribution</span>
+            </h3>
+          </div>
+          <div class="chart-container" style="height: 180px;">
+            <svg class="chart-svg" id="summaryChartSvg"></svg>
+          </div>
+        </div>
+
+        <!-- Full Longitudinal Screening History Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span data-i18n="historyTableTitle">Complete Screening Records</span>
+            </h3>
+
+            <div class="history-header-actions">
+              <input id="historySearchInput" class="form-control" type="search" placeholder="Search child code or record ID" aria-label="Search screening history" autocomplete="off">
+              <select id="historyFilterSelect" class="form-control" style="width: auto; padding: 0.45rem 1rem; font-size: 0.85rem;">
+                <option value="all" data-i18n="filterAll">All Screenings</option>
+                <option value="stunting" data-i18n="filterStunting">Stunting Only</option>
+                <option value="wasting" data-i18n="filterWasting">Wasting Only</option>
+                <option value="underweight" data-i18n="filterUnderweight">Underweight Only</option>
+                <option value="overweight" data-i18n="filterOverweight">Overweight Only</option>
+              </select>
+              <button class="btn-secondary" id="exportCsvBtn" title="Export to CSV">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span data-i18n="btnExportCsv">Export CSV</span>
+              </button>
+              <button class="btn-secondary btn-danger" id="clearHistoryBtn" title="Clear All History">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span data-i18n="btnClearHistory">Clear All History</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="thId">#</th>
+                  <th data-i18n="thTime">Date & Time</th>
+                  <th>Child Code</th>
+                  <th data-i18n="thSex">Sex</th>
+                  <th data-i18n="thAge">Age</th>
+                  <th data-i18n="thHeight">Height</th>
+                  <th data-i18n="thWeight">Weight</th>
+                  <th data-i18n="thBmi">BMI</th>
+                  <th data-i18n="thResult">ML Classification</th>
+                  <th data-i18n="thActions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr>
+                  <td colspan="10" class="empty-history-placeholder">Loading screening records...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- VIEW 4: NUTRITION EDUCATION (INDIAN FOODS) -->
+      <!-- ================================================================== -->
+      <section class="view-section" id="education-view">
+
+        <div class="education-hero">
+          <h2 data-i18n="nutritionEduTitle">Child Nutrition Guidance</h2>
+          <p data-i18n="nutritionEduSubtitle">Explore general food sources and nutritional information to support awareness of balanced child nutrition.</p>
+        </div>
+
+        <p class="nutrition-safety-note" data-i18n="nutritionDisclaimer" role="note">
+          Food recommendations are general educational information, not personalized medical advice. Consider the child's age, allergies, feeding stage and dietary needs. Consult a qualified healthcare professional if a nutritional deficiency is suspected.
+        </p>
+        <p class="form-hint nutrition-capability-note">The screening model does not assess nutrient deficiencies.</p>
+
+        <div class="nutrition-deficiency-grid" id="nutritionCardsContainer">
+          <article class="nutrition-card">
+            <h3>Iron-Rich Foods</h3>
+            <p class="nutrient-role">Iron helps the body make hemoglobin, which carries oxygen in the blood.</p>
+            <p><strong>Food examples:</strong> Lentils, chickpeas, beans, leafy green vegetables, and iron-fortified foods.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Include different suitable iron-rich foods as part of varied meals.</p>
+          </article>
+          <article class="nutrition-card">
+            <h3>Vitamin A Food Sources</h3>
+            <p class="nutrient-role">Vitamin A supports normal vision and the immune system.</p>
+            <p><strong>Food examples:</strong> Carrots, pumpkin, sweet potato, dark green leafy vegetables, and eggs.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Offer different colorful vegetables and other suitable foods across meals.</p>
+          </article>
+          <article class="nutrition-card">
+            <h3>Calcium-Rich Foods</h3>
+            <p class="nutrient-role">Calcium helps build and maintain bones and teeth and supports normal muscle function.</p>
+            <p><strong>Food examples:</strong> Milk, curd, cheese, and calcium-fortified foods.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Choose suitable options based on age, allergies, dietary restrictions, and family food practices.</p>
+          </article>
+          <article class="nutrition-card">
+            <h3>Protein-Rich Foods</h3>
+            <p class="nutrient-role">Protein helps the body build and repair tissues and supports growth.</p>
+            <p><strong>Food examples:</strong> Lentils, beans, peas, eggs, milk and curd, and fish.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Combine different suitable protein sources over time; prepare foods safely for the child's age.</p>
+          </article>
+          <article class="nutrition-card">
+            <h3>Vitamin C Food Sources</h3>
+            <p class="nutrient-role">Vitamin C supports healthy tissues and helps the body absorb iron from plant foods.</p>
+            <p><strong>Food examples:</strong> Guava, amla, oranges, and tomatoes.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Offer locally available fruits and vegetables in safe, age-appropriate forms.</p>
+          </article>
+          <article class="nutrition-card">
+            <h3>Folate-Rich Foods</h3>
+            <p class="nutrient-role">Folate helps cells grow and supports the formation of red blood cells.</p>
+            <p><strong>Food examples:</strong> Spinach, other leafy green vegetables, beans, peas, and lentils.</p>
+            <p class="nutrition-variety"><strong>Food variety:</strong> Include different suitable vegetables and legumes as part of varied meals.</p>
+          </article>
+        </div>
+
+      </section>
+</main>
+
+    <!-- Application Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer" data-i18n="footerDisclaimer">
+        AI-generated results are intended for preliminary educational screening and should not replace professional medical assessment.
+      </div>
+      <div>
+        <span data-i18n="footerCopyright">NutriShield – AI-Powered Child Nutrition Screening and Monitoring System</span>
+      </div>
+    </footer>
+
+  </div>
+
+</div>
+
+<!-- Scripts -->
+<script src="/static/js/translations.js?v=2.6.1"></script>
+<script src="/static/js/app.js?v=2.6.1"></script>
+</body>
+</html>
